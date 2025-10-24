@@ -4,7 +4,7 @@ import { z } from "zod";
 import fetch from "node-fetch";
 
 import * as models from "./src/operations/models";
-import * as chat from "./src/operations/chat";
+import * * chat from "./src/operations/chat";
 import * as completions from "./src/operations/completions";
 import * as embeddings from "./src/operations/embeddings";
 import {
@@ -150,15 +150,25 @@ server.addTool({
 });
 
 async function startServer() {
-  await server.start({
-    transportType: "httpStream",
-    httpStream: {
-      port: 8080,
-    },
-  });
-  console.error(
-    "Grok MCP Server running on HTTP stream at http://localhost:8080/stream"
-  );
+  // Check if we should use stdio (default for MCP) or HTTP stream
+  const useStdio = process.argv.includes('--stdio') || !process.argv.includes('--http');
+  
+  if (useStdio) {
+    await server.start({
+      transportType: "stdio",
+    });
+    console.error("Grok MCP Server running on stdio");
+  } else {
+    await server.start({
+      transportType: "httpStream",
+      httpStream: {
+        port: 8080,
+      },
+    });
+    console.error(
+      "Grok MCP Server running on HTTP stream at http://localhost:8080/stream"
+    );
+  }
 }
 
 startServer().catch((error) => {
